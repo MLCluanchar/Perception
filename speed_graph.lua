@@ -17,16 +17,33 @@ local process = {
     screen_y = 0,
 }
 
+local dump = cs2.get_schema_dump()
+
+if not dump then
+    engine.log("Schema dump not available.", 255, 0, 0, 255)
+    return
+end
+
+local dumps = {}
+
+for _, entry in ipairs(dump) do
+    local className, fieldName = entry.name:match("(.*)::(.*)")
+    if className and fieldName then
+        if not dumps[className] then
+            dumps[className] = {}
+        end
+        dumps[className][fieldName] = entry.offset
+    end
+end
+
 local offset = {
-    -- game pointers etc
     local_pawn = cs2.get_local_player().pawn,
-    -- schema offsets
-    m_lifeState = 0x348, -- CBaseEntity->m_lifeState
-    m_MoveType  = 0x445, -- CBaseEntity->m_MoveType 
-    m_nActualMoveType = 0x328, -- CBaseEntity->m_nActualMoveType
-    m_vecVelocity = 0x400,-- CBaseEntity->m_vecVelocity
-    m_vOldOrigin = 0x1324,
-    m_fFlags = 0x3EC,
+    m_lifeState = dumps.C_BaseEntity.m_lifeState,
+    m_MoveType  = dumps.C_BaseEntity.m_MoveType,
+    m_nActualMoveType = dumps.C_BaseEntity.m_nActualMoveType, 
+    m_vecVelocity = dumps.C_BaseEntity.m_vecVelocity,
+    m_vOldOrigin = dumps.C_BasePlayerPawn.m_vOldOrigin,
+    m_fFlags = dumps.C_BaseEntity.m_fFlags,
 }
 
 local delayedCalls = {}
