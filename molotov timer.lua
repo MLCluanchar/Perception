@@ -4,6 +4,9 @@ if not dump then
     return
 end
 
+local url = "https://csnades.gg/_next/static/media/molotov-icon.562fcd92.png"
+local icon = render.create_bitmap_from_url(url) 
+
 local config = {
     bar_width = 40,
     bar_height = 5,
@@ -46,6 +49,7 @@ local offset = {
     m_flSimulationTime = dumps.C_BaseEntity.m_flSimulationTime,
     m_nFireEffectTickBegin = dumps.C_Inferno.m_nFireEffectTickBegin,
     m_nFireLifetime = dumps.C_Inferno.m_nFireLifetime,
+    m_bFireIsBurning = dumps.C_Inferno.m_bFireIsBurning,
     flCurtime = 0x18 + 28
 }
 
@@ -124,7 +128,6 @@ local function readVector(address) --- From @casey, thank you!
     return origin
 end
 
-
 local get_projectales = function()
     local highest_index = cs2.get_highest_entity_index()
     local global_vars = cs2.get_global_vars()
@@ -133,6 +136,7 @@ local get_projectales = function()
         local entity = get_entity(i)
         local Schema_name = GetSchemaName(entity)
         if Schema_name == "C_Inferno" then
+            local m_bFireIsBurning = proc.read_int8(get_entity(i) + offset.m_bFireIsBurning)
             local m_pGameSceneNode = proc.read_int64(get_entity(i) + offset.m_pGameSceneNode)
             local m_vecOrigin = readVector(m_pGameSceneNode + offset.m_vecOrigin)
             local inferno_pos_x, inferno_pos_y = cs2.world_to_screen(m_vecOrigin.x, m_vecOrigin.y, m_vecOrigin.z)
@@ -140,7 +144,7 @@ local get_projectales = function()
             local m_nFireLifetime = proc.read_float(get_entity(i) + offset.m_nFireLifetime)
             local ticks_to_time = m_nFireEffectTickBegin * 0.015625
             local flFraction = clamp((flCurtime - ticks_to_time) / m_nFireLifetime, 0.0, 1.0)
-            if flFraction ~= 1 then
+            if flFraction ~= 1 and m_bFireIsBurning == 1 then
                 local bar_width  = config.bar_width
                 local bar_height = config.bar_height
 
@@ -175,18 +179,16 @@ local get_projectales = function()
                     1,
                     false
                 )
+
+                local icon_w = 32
+                local icon_h = 32
+
+                local icon_x = inferno_pos_x - (icon_w / 2) 
+                local icon_y = inferno_pos_y - icon_h - 5  -- 往上 5px 间隔
+
+                render.draw_bitmap(icon, icon_x, icon_y, icon_w, icon_h, 255)
             end
         end
-                --[[
-            if desginername == "molotov_projectile" then
-            local m_pGameSceneNode = proc.read_int64(get_entity(i) + offset.m_pGameSceneNode)
-            local m_vecOrigin = readVector(m_pGameSceneNode + offset.m_vecOrigin)
-            local m_nFireEffectTickBegin = proc.read_int64(get_entity(i) + offset.m_nFireEffectTickBegin)
-            local ticks_to_time = m_nFireEffectTickBegin * 0.015625
-            local flFraction = clamp((flCurtime - ticks_to_time) / 22.0, 0.0, 1.0)
-            local smoke_pos_x, smoke_pos_y = cs2.world_to_screen(m_vecOrigin.x, m_vecOrigin.y, m_vecOrigin.z)
-        end     
-                ]]
     end
 end
 
