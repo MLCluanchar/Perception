@@ -3,7 +3,8 @@ if not dump then
     engine.log("Schema dump not available.", 255, 0, 0, 255)
     return
 end
-
+local url = "https://csnades.gg/_next/static/media/smoke-icon.a2d4dd7a.png"
+local icon = render.create_bitmap_from_url(url) 
 local config = {
     bar_width = 40,
     bar_height = 5,
@@ -154,16 +155,13 @@ local get_projectales = function()
                             false
                         )
 
-                        --[[
-                            local icon_w = 32
-                            local icon_h = 32
+                        local icon_w = 32
+                        local icon_h = 32
 
-                            -- 将图标居中在进度条上方(可以稍微留一点间距)
-                            local icon_x = bar_x + (bar_width / 2) - (icon_w / 2)
-                            local icon_y = bar_y - icon_h - 5  -- 往上 5px 间隔
+                        local icon_x = smoke_pos_x - (icon_w / 2)
+                        local icon_y = smoke_pos_y - icon_h - 5
 
-                            render.draw_bitmap(myIcon, icon_x, icon_y, icon_w, icon_h, 255)
-                        ]]
+                        render.draw_bitmap(icon, icon_x, icon_y, icon_w, icon_h, 255)
                     end
                 end
             end
